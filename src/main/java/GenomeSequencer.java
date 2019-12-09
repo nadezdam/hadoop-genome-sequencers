@@ -25,11 +25,6 @@ public class GenomeSequencer extends Configured implements Tool {
     }
 
     public int run(String[] args) throws Exception {
-//        if (args.length != 1) {
-//            System.out.println("Usage: <sequencer-algorithm>");
-//            return 1;
-//        }
-        Configuration conf = new Configuration();
         InputStream propertiesInputFile = getClass().getClassLoader().getResourceAsStream("config.properties");
         Properties properties = new Properties();
         properties.load(propertiesInputFile);
@@ -50,6 +45,7 @@ public class GenomeSequencer extends Configured implements Tool {
         int editLimit = Integer.parseInt(properties.getProperty("edit-limit"));
         int scoreLimit = Integer.parseInt(properties.getProperty("score-limit"));
 
+        Configuration conf = new Configuration();
         conf.set("patterns", patterns);
         conf.setInt("patternLength", patternLength);
         conf.setInt("edit-limit", editLimit);

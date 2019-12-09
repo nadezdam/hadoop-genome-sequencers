@@ -47,5 +47,5 @@ out
 gen
 
 results/
-genomes/
+genomes/*
 
