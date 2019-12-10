@@ -15,9 +15,8 @@ public class IndexMapper extends Mapper<LongWritable, Text, Text, Text> {
     public void setup(Context context) throws IOException, InterruptedException {
         super.setup(context);
         Configuration conf = context.getConfiguration();
-        String pattern = conf.get("patterns").split(Pattern.quote("|"))[0];
-        System.out.println(pattern);
-        this.patternLength = pattern.length();
+//      String pattern=conf.get("patterns").split(Pattern.quote("|"))[0];
+        this.patternLength = conf.get("pattern").length();
     }
 
     public void map(LongWritable key, Text value, Context context) {

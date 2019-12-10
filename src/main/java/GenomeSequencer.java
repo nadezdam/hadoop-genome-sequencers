@@ -38,16 +38,16 @@ public class GenomeSequencer extends Configured implements Tool {
         }
 
         Path resultsFolderPath = new Path(properties.getProperty("output", "./results"));
-        String patterns = properties.getProperty("patterns");
-        String sequencerAlgorithm=properties.getProperty("sequencer-algorithm");
-        int patternLength = Integer.parseInt(properties.getProperty("pattern-length"));
+        String pattern = properties.getProperty("pattern");
+        String sequencerAlgorithm = properties.getProperty("sequencer-algorithm");
+//        int patternLength = Integer.parseInt(properties.getProperty("pattern-length"));
         int numReduceTasks = Integer.parseInt(properties.getProperty("num-reduce-tasks"));
         int editLimit = Integer.parseInt(properties.getProperty("edit-limit"));
         int scoreLimit = Integer.parseInt(properties.getProperty("score-limit"));
 
         Configuration conf = new Configuration();
-        conf.set("patterns", patterns);
-        conf.setInt("patternLength", patternLength);
+        conf.set("pattern", pattern);
+        conf.setInt("patternLength", pattern.length());
         conf.setInt("edit-limit", editLimit);
         conf.setInt("score-limit", scoreLimit);
         FileSystem hdfs = FileSystem.get(conf);
@@ -71,8 +71,12 @@ public class GenomeSequencer extends Configured implements Tool {
 
         job.setInputFormatClass(SequenceInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
-
-        return job.waitForCompletion(true) ? 0 : 1;
+        long start = System.currentTimeMillis();
+        int jobExitResult = job.waitForCompletion(true) ? 0 : 1;
+        long end = System.currentTimeMillis();
+        long elapsed = (end - start) / 1000;
+        System.out.println("Execution time in seconds: " + elapsed);
+        return jobExitResult;
     }
 
 

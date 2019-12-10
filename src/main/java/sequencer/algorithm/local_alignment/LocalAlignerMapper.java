@@ -19,7 +19,8 @@ public class LocalAlignerMapper extends
     public void setup(Context context) throws IOException, InterruptedException {
         super.setup(context);
         Configuration conf = context.getConfiguration();
-        this.pattern = conf.get("patterns").split(Pattern.quote("|"))[0];
+        this.pattern = conf.get("pattern");
+//                conf.get("patterns").split(Pattern.quote("|"))[0];
         this.score_limit = conf.getInt("score-limit", 0);
     }
 
