@@ -37,7 +37,7 @@ public class ApproximateMatchMapper extends
         offsets = am.offsets;
         min_edits = am.min_edit_el;
 
-        if (min_edits < edit_limit) {
+        if (min_edits <= edit_limit) {
             for (int offset : offsets) {
                 context.write(new IntWritable(min_edits), new LongWritable(
                         base_offset + (long) offset));

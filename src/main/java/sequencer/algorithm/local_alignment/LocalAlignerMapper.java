@@ -38,7 +38,7 @@ public class LocalAlignerMapper extends
         offset = aligner.offset;
         score = aligner.score;
 
-        if (score > score_limit) {
+        if (score >= score_limit) {
             context.write(new IntWritable(score), new LongWritable(base_offset + offset));
         }
 

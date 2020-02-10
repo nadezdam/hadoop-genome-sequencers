@@ -14,7 +14,6 @@ public class SequenceRecordReader extends RecordReader<LongWritable, Text> {
 
     private LineRecordReader lineRecordReader;
     private String prevSequence;
-    private String currentSequence;
     private long offset;
     private LongWritable key;
     private Text value;
@@ -65,13 +64,13 @@ public class SequenceRecordReader extends RecordReader<LongWritable, Text> {
             this.key = null;
             return false;
         }
-        this.currentSequence = prevSequence;
+        String currentSequence = prevSequence;
         this.key.set(offset);
         this.prevSequence = null;
 
         if (lineRecordReader.nextKeyValue()) {
             this.prevSequence = lineRecordReader.getCurrentValue().toString();
-            this.currentSequence += prevSequence
+            currentSequence += prevSequence
                     .substring(0, patternLength - 1);
 
             this.offset = lineRecordReader.getCurrentKey().get();
