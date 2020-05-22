@@ -10,15 +10,13 @@ import sequencer.algorithm.index_sequencer.*;
 import sequencer.algorithm.local_alignment.LocalAlignerMapper;
 import sequencer.algorithm.local_alignment.LocalAlignerReducer;
 
-public class SequencerAlgorithm {
-    public String algorithm;
+class SequencerAlgorithm {
     private Class mapperClass;
     private Class reducerClass;
     private Class outputKeyClass;
     private Class outputValueClass;
 
     SequencerAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
         switch (algorithm) {
             case "index-sequencer":
                 this.mapperClass = IndexMapper.class;
@@ -35,14 +33,14 @@ public class SequencerAlgorithm {
             case "approximate-match-sequencer":
                 this.mapperClass = ApproximateMatchMapper.class;
                 this.reducerClass = ApproximateMatchReducer.class;
-                this.outputKeyClass = IntWritable.class;
-                this.outputValueClass = LongWritable.class;
+                this.outputKeyClass = Text.class;
+                this.outputValueClass = Text.class;
                 break;
             case "local-alignment":
                 this.mapperClass = LocalAlignerMapper.class;
                 this.reducerClass = LocalAlignerReducer.class;
-                this.outputKeyClass = IntWritable.class;
-                this.outputValueClass = LongWritable.class;
+                this.outputKeyClass = Text.class;
+                this.outputValueClass = Text.class;
                 break;
         }
     }

@@ -11,7 +11,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class LocalAlignerMapper extends
-        Mapper<LongWritable, Text, IntWritable, LongWritable> {
+        Mapper<LongWritable, Text, Text, Text> {
 
     private String pattern;
     private int score_limit;
@@ -39,7 +39,7 @@ public class LocalAlignerMapper extends
         score = aligner.score;
 
         if (score >= score_limit) {
-            context.write(new IntWritable(score), new LongWritable(base_offset + offset));
+            context.write(new Text(String.valueOf(score)), new Text(String.valueOf(base_offset + offset)));
         }
 
     }

@@ -11,18 +11,17 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class ApproximateMatchReducer extends
-        Reducer<IntWritable, LongWritable, Text, Text> {
+        Reducer<Text, Text, Text, Text> {
 
-    public void reduce(IntWritable key, Iterable<LongWritable> values,
+    public void reduce(Text key, Iterable<Text> values,
                        Context context) throws IOException, InterruptedException {
 
         Vector<String> offsets = new Vector<>();
-        for (LongWritable val : values) {
-            offsets.add(String.valueOf(val.get()));
+        for (Text val : values) {
+            offsets.add(val.toString());
         }
 
-        context.write(new Text("Number of edits:" + key.get()), new Text(
-                StringUtils.join(offsets, ", ")));
+        context.write(key, new Text(StringUtils.join(offsets, ", ")));
 
     }
 }

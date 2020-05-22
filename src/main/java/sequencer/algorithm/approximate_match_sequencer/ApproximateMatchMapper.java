@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 
 public class ApproximateMatchMapper extends
-        Mapper<LongWritable, Text, IntWritable, LongWritable> {
+        Mapper<LongWritable, Text, Text, Text> {
 
     private String pattern;
     private int edit_limit;
@@ -39,8 +39,7 @@ public class ApproximateMatchMapper extends
 
         if (min_edits <= edit_limit) {
             for (int offset : offsets) {
-                context.write(new IntWritable(min_edits), new LongWritable(
-                        base_offset + (long) offset));
+                context.write(new Text(String.valueOf(min_edits)), new Text(String.valueOf(base_offset + (long) offset)));
             }
         }
 

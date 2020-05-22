@@ -1,5 +1,6 @@
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -46,17 +47,20 @@ public class GenomeSequencer extends Configured implements Tool {
 //        int editLimit = Integer.parseInt(properties.getProperty("edit-limit"));
 //        int scoreLimit = Integer.parseInt(properties.getProperty("score-limit"));
 
-        String referenceGenomePath = args[0];
+        Path referenceGenomePath = new Path(args[0]);
 
-        Path resultsFolderPath = new Path(args[1]);
-        String pattern = args[2];
+        String sequencerAlgorithm = args[2];
+        Path resultsFolderPath = new Path(args[1] + "-" + sequencerAlgorithm);
+        String pattern = args[3];
         long patternLen = pattern.length();
-        String sequencerAlgorithm = args[3];
         int numReduceTasks = Integer.parseInt(args[4]);
+        int DESIRED_NUM_OF_SPLITS = Integer.parseInt(args[5]);
+        boolean useCombiner = args[6].equalsIgnoreCase("use-combiner");
+        final long DEFAULT_SPLIT_SIZE = 128 * 1024 * 1024;
 //        int editLimit = Integer.parseInt(args[5]);
 //        int scoreLimit = Integer.parseInt(args[6]);
 
-        int editLimit = (int) Math.ceil(patternLen * 0.1);
+        int editLimit = (int) Math.ceil(patternLen * 0.2);
         int scoreLimit = (int) Math.ceil(patternLen);
 
         Configuration conf = new Configuration();
@@ -64,35 +68,45 @@ public class GenomeSequencer extends Configured implements Tool {
         conf.setInt("patternLength", pattern.length());
         conf.setInt("edit-limit", editLimit);
         conf.setInt("score-limit", scoreLimit);
-        FileSystem hdfs = FileSystem.get(conf);
-        long FILE_SIZE = (long) 9.3 * 1024 * 1024 * 1024;
-//        int DESIRED_NUM_OF_SPLITS = 40;
-        int DESIRED_NUM_OF_SPLITS = 20;
-//        int DESIRED_NUM_OF_SPLITS = 60;
-        long SPLIT_SIZE = FILE_SIZE / DESIRED_NUM_OF_SPLITS;
 
-//        final long DEFAULT_SPLIT_SIZE = 128 * 1024 * 1024;
-        conf.setLong(SequenceInputFormat.SPLIT_MAXSIZE, SPLIT_SIZE);
+        FileSystem hdfs = FileSystem.get(conf);
+
+        if (DESIRED_NUM_OF_SPLITS != 0) {
+            ContentSummary cSummary = hdfs.getContentSummary(referenceGenomePath);
+            long FILE_SIZE = cSummary.getLength();
+            long SPLIT_SIZE = FILE_SIZE / DESIRED_NUM_OF_SPLITS;
+            conf.setLong(SequenceInputFormat.SPLIT_MAXSIZE, SPLIT_SIZE);
+        }
+
         if (hdfs.exists(resultsFolderPath)) {
             hdfs.delete(resultsFolderPath, true);
         }
         Job job = Job.getInstance(conf);
         job.setJarByClass(GenomeSequencer.class);
+
+
         SequencerAlgorithm sequencerAlgorithmInstance = new SequencerAlgorithm(sequencerAlgorithm);
 
         job.setOutputKeyClass(sequencerAlgorithmInstance.getOutputKeyClass());
         job.setOutputValueClass(sequencerAlgorithmInstance.getOutputValueClass());
 
         job.setMapperClass(sequencerAlgorithmInstance.getMapperClass());
-        job.setCombinerClass(sequencerAlgorithmInstance.getReducerClass());
         job.setReducerClass(sequencerAlgorithmInstance.getReducerClass());
-        job.setNumReduceTasks(numReduceTasks);
 
-        FileInputFormat.setInputPaths(job, new Path(referenceGenomePath));
+        if (useCombiner) {
+            job.setJobName(sequencerAlgorithm + " w/ combiner");
+            job.setCombinerClass(sequencerAlgorithmInstance.getReducerClass());
+        } else {
+            job.setJobName(sequencerAlgorithm + " w/o combiner");
+        }
+
+        job.setNumReduceTasks(numReduceTasks);
+        FileInputFormat.setInputPaths(job, referenceGenomePath);
         FileOutputFormat.setOutputPath(job, resultsFolderPath);
 
         job.setInputFormatClass(SequenceInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
+
         long start = System.currentTimeMillis();
         int jobExitResult = job.waitForCompletion(true) ? 0 : 1;
         long end = System.currentTimeMillis();
