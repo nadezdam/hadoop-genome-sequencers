@@ -28,24 +28,11 @@ public class GenomeSequencer extends Configured implements Tool {
     }
 
     public int run(String[] args) throws Exception {
-//        InputStream propertiesInputFile = getClass().getClassLoader().getResourceAsStream("config.properties");
-//        Properties properties = new Properties();
-//        properties.load(propertiesInputFile);
 
-//        String referenceGenomePath = "";
-//        try {
-//            referenceGenomePath = properties.getProperty("input");
-//        } catch (Exception exception) {
-//            System.out.println(exception.getMessage());
-//            System.out.println("Path to reference genome must be set!");
-//        }
-
-//        Path resultsFolderPath = new Path(properties.getProperty("output", "./results"));
-//        String pattern = properties.getProperty("pattern");
-//        String sequencerAlgorithm = properties.getProperty("sequencer-algorithm");
-//        int numReduceTasks = Integer.parseInt(properties.getProperty("num-reduce-tasks"));
-//        int editLimit = Integer.parseInt(properties.getProperty("edit-limit"));
-//        int scoreLimit = Integer.parseInt(properties.getProperty("score-limit"));
+        if (args.length != 7) {
+            System.out.println("usage: -input -output -algorithm -pattern -numReduceTasks -numMapTasks (if 0, then use default) -useCombiner (boolean)");
+            return 0;
+        }
 
         Path referenceGenomePath = new Path(args[0]);
 
@@ -55,7 +42,7 @@ public class GenomeSequencer extends Configured implements Tool {
         long patternLen = pattern.length();
         int numReduceTasks = Integer.parseInt(args[4]);
         int DESIRED_NUM_OF_SPLITS = Integer.parseInt(args[5]);
-        boolean useCombiner = args[6].equalsIgnoreCase("use-combiner");
+        boolean useCombiner = Boolean.parseBoolean(args[6]);
         final long DEFAULT_SPLIT_SIZE = 128 * 1024 * 1024;
 //        int editLimit = Integer.parseInt(args[5]);
 //        int scoreLimit = Integer.parseInt(args[6]);
